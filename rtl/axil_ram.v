@@ -84,7 +84,7 @@ reg [DATA_WIDTH-1:0] s_axil_rdata_pipe_reg = {DATA_WIDTH{1'b0}};
 reg s_axil_rvalid_pipe_reg = 1'b0;
 
 // (* RAM_STYLE="BLOCK" *)
-reg [DATA_WIDTH-1:0] mem[(2**VALID_ADDR_WIDTH)-1:0];
+reg [DATA_WIDTH-1:0] mem[0:(2**VALID_ADDR_WIDTH)-1];
 
 wire [VALID_ADDR_WIDTH-1:0] s_axil_awaddr_valid = s_axil_awaddr >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
 wire [VALID_ADDR_WIDTH-1:0] s_axil_araddr_valid = s_axil_araddr >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
@@ -105,9 +105,12 @@ initial begin
     // workaround for synthesizer complaints about large loop counts
     for (i = 0; i < 2**VALID_ADDR_WIDTH; i = i + 2**(VALID_ADDR_WIDTH/2)) begin
         for (j = i; j < i + 2**(VALID_ADDR_WIDTH/2); j = j + 1) begin
-            mem[j] = j;
+            mem[j] = 0;
         end
     end
+
+    $readmemh("instr.mc", mem);
+
 end
 
 always @* begin
