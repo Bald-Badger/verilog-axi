@@ -116,7 +116,12 @@ initial begin
 	case (BOOT_TYPE)
 		BINARY_BOOT: begin
 			fp = $fopen("instr.bin","r");
+			if (fp == 0) begin
+                $error("failed to open boot file\n");
+                $finish();
+            end
 			s = $fread(mem, fp);
+			$fclose(fp);
 		end
 		
 		RARS_BOOT: begin
@@ -127,7 +132,6 @@ initial begin
 			$display("unkown boot type!");
 		end
 	endcase
-
 end
 
 always @* begin

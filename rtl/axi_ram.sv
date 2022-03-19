@@ -23,6 +23,8 @@ THE SOFTWARE.
 */
 
 // Language: Verilog 2001
+import defines::*;
+import mem_defines::*;
 
 `resetall
 `timescale 1ns / 1ps
@@ -144,7 +146,7 @@ reg s_axi_rlast_pipe_reg = 1'b0;
 reg s_axi_rvalid_pipe_reg = 1'b0;
 
 // (* RAM_STYLE="BLOCK" *)
-reg [DATA_WIDTH-1:0] mem[(2**VALID_ADDR_WIDTH)-1:0];
+reg [DATA_WIDTH-1:0] mem[0:(2**VALID_ADDR_WIDTH)-1];
 
 wire [VALID_ADDR_WIDTH-1:0] s_axi_awaddr_valid = s_axi_awaddr >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
 wire [VALID_ADDR_WIDTH-1:0] s_axi_araddr_valid = s_axi_araddr >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
@@ -165,6 +167,8 @@ assign s_axi_rvalid = PIPELINE_OUTPUT ? s_axi_rvalid_pipe_reg : s_axi_rvalid_reg
 
 integer i, j;
 
+integer fp, s;
+
 initial begin
     // two nested loops for smaller number of iterations per loop
     // workaround for synthesizer complaints about large loop counts
@@ -173,6 +177,26 @@ initial begin
             mem[j] = 0;
         end
     end
+
+    case (BOOT_TYPE)
+		BINARY_BOOT: begin
+			fp = $fopen("instr.bin","r");
+            if (fp == 0) begin
+                $error("failed to open boot file\n");
+                $finish();
+            end
+			s = $fread(mem, fp);
+            $fclose(fp);
+		end
+		
+		RARS_BOOT: begin
+			$readmemh("instr.mc", mem);
+		end
+
+		default: begin
+			$display("unkown boot type!");
+		end
+	endcase
 end
 
 always @* begin
