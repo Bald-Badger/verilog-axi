@@ -513,7 +513,7 @@ endgenerate
 
 // acknowledge generation
 generate
-for (n = 0; n < S_COUNT; n = n + 1) begin ack_gen
+for (n = 0; n < S_COUNT; n = n + 1) begin : ack_gen
     assign acknowledge[2*n]   = grant[2*n]   && s_axi_bvalid[n] && s_axi_bready[n];
     assign acknowledge[2*n+1] = grant[2*n+1] && s_axi_rvalid[n] && s_axi_rready[n] && s_axi_rlast[n];
 end
