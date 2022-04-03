@@ -146,10 +146,16 @@ always @* begin
 	if (s_axil_awvalid && s_axil_wvalid && (!s_axil_bvalid || s_axil_bready) && (!s_axil_awready && !s_axil_wready)) begin
 		s_axil_awready_next = 1'b1;
 		s_axil_wready_next = 1'b1;
-		s_axil_bvalid_next = 1'b1;
-
+		// delete cuz https://github.com/alexforencich/verilog-axi/pull/11/files
+		// s_axil_bvalid_next = 1'b1;
 		mem_wr_en = 1'b1;
 	end
+
+	// add cuz https://github.com/alexforencich/verilog-axi/pull/11/files
+	if (s_axil_awvalid && s_axil_wvalid && (!s_axil_bvalid || s_axil_bready) && (s_axil_awready && s_axil_wready)) begin
+		s_axil_bvalid_next = 1'b1;
+	end
+
 end
 
 always @(posedge clk) begin
