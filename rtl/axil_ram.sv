@@ -105,7 +105,6 @@ integer i, j;
 integer fp, s;
 
 // synthesis translate_off
-
 initial begin
 	// two nested loops for smaller number of iterations per loop
 	// workaround for synthesizer complaints about large loop counts
@@ -135,7 +134,6 @@ initial begin
 		end
 	endcase
 end
-
 // synthesis translate_on
 
 always @* begin
