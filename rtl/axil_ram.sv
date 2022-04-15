@@ -116,10 +116,10 @@ initial begin
 
 	case (BOOT_TYPE)
 		BINARY_BOOT: begin
-			fp = $fopen("instr.bin","r");
+			fp = $fopen("instr.bin","rb");
 			if (fp == 0) begin
 				$error("failed to open boot file\n");
-				$finish();
+				$stop();
 			end
 			s = $fread(mem, fp);
 			$fclose(fp);
