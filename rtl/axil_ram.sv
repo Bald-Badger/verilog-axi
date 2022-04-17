@@ -43,8 +43,7 @@ module axil_ram #
 	parameter STRB_WIDTH = (DATA_WIDTH/8),
 	// Extra pipeline register on output
 	parameter PIPELINE_OUTPUT = 0
-)
-(
+) (
 	input  wire						clk,
 	input  wire						rst,
 
@@ -116,13 +115,20 @@ initial begin
 
 	case (BOOT_TYPE)
 		BINARY_BOOT: begin
-			fp = $fopen("instr.bin","rb");
+			fp = $fopen("test.elf","rb");
 			if (fp == 0) begin
 				$error("failed to open boot file\n");
 				$stop();
 			end
 			s = $fread(mem, fp);
 			$fclose(fp);
+
+			// RISCV binary should load to VA (in this case also PA) 0x10000
+			// moving data to its offset position and earsing them
+			for (i = 0; i < 20'h10000/4; i++) begin
+				mem[20'h0x10000/4 + i] = mem [i];
+				mem[i] = 0;
+			end
 		end
 		
 		RARS_BOOT: begin
@@ -131,6 +137,7 @@ initial begin
 
 		default: begin
 			$display("unkown boot type!");
+			$stop();
 		end
 	endcase
 end
