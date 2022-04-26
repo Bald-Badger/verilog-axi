@@ -85,6 +85,7 @@ reg [DATA_WIDTH-1:0] s_axil_rdata_pipe_reg = {DATA_WIDTH{1'b0}};
 reg s_axil_rvalid_pipe_reg = 1'b0;
 
 // (* RAM_STYLE="BLOCK" *)
+reg [DATA_WIDTH-1:0] mem_init[0:(2**VALID_ADDR_WIDTH)-1];
 reg [DATA_WIDTH-1:0] mem[0:(2**VALID_ADDR_WIDTH)-1];
 
 wire [VALID_ADDR_WIDTH-1:0] s_axil_awaddr_valid = s_axil_awaddr >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
@@ -120,15 +121,14 @@ initial begin
 				$error("failed to open boot file\n");
 				$stop();
 			end
-			s = $fread(mem, fp);
+			s = $fread(mem_init, fp);
 			$fclose(fp);
 
 			// RISCV binary should load to VA (in this case also PA) 0x10000
-			// moving data to its offset position and earsing them
-			for (i = 0; i < 20'h10000/4; i++) begin
-				mem[20'h0x10000/4 + i] = mem [i];
-				mem[i] = 0;
+			for (i = 0; i < 2**VALID_ADDR_WIDTH - 20'h0x10000/4; i++) begin
+				mem[20'h0x10000/4 + i] = mem_init [i];
 			end
+
 		end
 		
 		RARS_BOOT: begin
