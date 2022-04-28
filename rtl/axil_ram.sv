@@ -42,7 +42,9 @@ module axil_ram #
 	// Width of wstrb (width of data bus in words)
 	parameter STRB_WIDTH = (DATA_WIDTH/8),
 	// Extra pipeline register on output
-	parameter PIPELINE_OUTPUT = 0
+	parameter PIPELINE_OUTPUT = 0,
+	// load the elf file into the mem on simulation
+	parameter bootload = 0
 ) (
 	input  wire						clk,
 	input  wire						rst,
@@ -106,40 +108,47 @@ integer fp, s;
 
 // synthesis translate_off
 initial begin
-	// two nested loops for smaller number of iterations per loop
-	// workaround for synthesizer complaints about large loop counts
-	for (i = 0; i < 2**VALID_ADDR_WIDTH; i = i + 2**(VALID_ADDR_WIDTH/2)) begin
-		for (j = i; j < i + 2**(VALID_ADDR_WIDTH/2); j = j + 1) begin
-			mem[j] = 0;
-		end
-	end
+	if (bootload) begin
+		case (BOOT_TYPE)
+			BINARY_BOOT: begin
+				fp = $fopen("test.elf","rb");
+				if (fp == 0) begin
+					$error("failed to open boot file\n");
+					$stop();
+				end
 
-	case (BOOT_TYPE)
-		BINARY_BOOT: begin
-			fp = $fopen("test.elf","rb");
-			if (fp == 0) begin
-				$error("failed to open boot file\n");
+				for (i = 0; i < 2**VALID_ADDR_WIDTH; i++) begin
+					mem_init[i] = 0;
+				end
+
+				s = $fread(mem_init, fp);
+				$fclose(fp);
+
+				// RISCV binary should load to VA (in this case also PA) 0x10000
+				for (i = 0; i < 2**VALID_ADDR_WIDTH - 20'h0x10000/4; i++) begin
+					mem[20'h0x10000/4 + i] = mem_init [i];
+				end
+
+				for (i = 0; i < 20'h0x10000/4; i++) begin
+					mem[i] = 0;
+				end
+
+			end
+			
+			RARS_BOOT: begin
+				$readmemh("instr.mc", mem);
+			end
+
+			default: begin
+				$display("unkown boot type!");
 				$stop();
 			end
-			s = $fread(mem_init, fp);
-			$fclose(fp);
-
-			// RISCV binary should load to VA (in this case also PA) 0x10000
-			for (i = 0; i < 2**VALID_ADDR_WIDTH - 20'h0x10000/4; i++) begin
-				mem[20'h0x10000/4 + i] = mem_init [i];
-			end
-
+		endcase
+	end else begin
+		for (i = 0; i < 2**VALID_ADDR_WIDTH; i++) begin
+			mem[i] = 0;
 		end
-		
-		RARS_BOOT: begin
-			$readmemh("instr.mc", mem);
-		end
-
-		default: begin
-			$display("unkown boot type!");
-			$stop();
-		end
-	endcase
+	end
 end
 // synthesis translate_on
 
