@@ -111,7 +111,7 @@ initial begin
 	if (bootload) begin
 		case (BOOT_TYPE)
 			BINARY_BOOT: begin
-				fp = $fopen("test.elf","rb");
+				fp = $fopen("riscy.elf","rb");
 				if (fp == 0) begin
 					$error("failed to open boot file\n");
 					$stop();
