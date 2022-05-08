@@ -87,7 +87,7 @@ reg [DATA_WIDTH-1:0] s_axil_rdata_pipe_reg = {DATA_WIDTH{1'b0}};
 reg s_axil_rvalid_pipe_reg = 1'b0;
 
 // (* RAM_STYLE="BLOCK" *)
-reg [DATA_WIDTH-1:0] mem_init[0:(2**VALID_ADDR_WIDTH)-1];
+// reg [DATA_WIDTH-1:0] mem_init[0:(2**VALID_ADDR_WIDTH)-1];
 reg [DATA_WIDTH-1:0] mem[0:(2**VALID_ADDR_WIDTH)-1];
 
 wire [VALID_ADDR_WIDTH-1:0] s_axil_awaddr_valid = s_axil_awaddr >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
@@ -118,12 +118,13 @@ initial begin
 				end
 
 				for (i = 0; i < 2**VALID_ADDR_WIDTH; i++) begin
-					mem_init[i] = 0;
+					mem[i] = 0;
 				end
 
-				s = $fread(mem_init, fp);
+				s = $fread(mem, fp);
 				$fclose(fp);
 
+/*
 				// RISCV binary should load to VA (in this case also PA) 0x10000
 				for (i = 0; i < 2**VALID_ADDR_WIDTH - 20'h0x10000/4; i++) begin
 					mem[20'h0x10000/4 + i] = mem_init [i];
@@ -132,7 +133,7 @@ initial begin
 				for (i = 0; i < 20'h0x10000/4; i++) begin
 					mem[i] = 0;
 				end
-
+*/
 			end
 			
 			RARS_BOOT: begin
